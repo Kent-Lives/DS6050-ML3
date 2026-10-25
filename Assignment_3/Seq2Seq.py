@@ -18,7 +18,8 @@ class Seq2Seq(nn.Module):
         tensor_of_logits_for_many_tokens = torch.zeros(batch_size, tgt_len, tgt_vocab_size).to(self.device)
 
         # TODO: Assign to local variable `tensor_with_final_hidden_states` the output of passing the provided source and the provided list of lengths.
-        raise NotImplementedError
+        tensor_with_final_hidden_states = self.encoder(src, src_lengths)
+        
 
         SOS_IDX = 1
         input = torch.full((batch_size,), SOS_IDX, dtype=torch.long, device=self.device)
@@ -26,7 +27,8 @@ class Seq2Seq(nn.Module):
 
             # TODO: Assign to local variables `tensor_of_logits` and `tensor_with_final_hidden_states`
             # the output passing the input and tensor with final hidden states to the decoder.
-            raise NotImplementedError
+            tensor_of_logits, tensor_with_final_hidden_states = self.decoder(input, tensor_with_final_hidden_states)
+            
 
             tensor_of_logits_for_many_tokens[:, t, :] = tensor_of_logits
             teacher_force = random.random() < teacher_forcing_ratio
