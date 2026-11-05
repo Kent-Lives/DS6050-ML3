@@ -94,7 +94,7 @@ You can access Rivanna via Visual Studio Code.
 
 6. Open a terminal by pressing CTRL + ~.
 
-7. To modernize python, see a list of active modules by running `module list`. See a list of available versions of miniforge by running `module spider miniforge`. Load `miniforge/24.11.3-py3.12` by running `module load miniforge/24.11.3-py3.12`.
+7. To modernize python, see a list of active modules by running `module list`. See a list of available versions of miniforge by running `module spider miniforge`. Load `miniforge/26.9.4` by running `module load miniforge/26.9.4`.
 
 8. Run the command python.
 

@@ -4,7 +4,7 @@ Use the course Conda environment when running assignments from a terminal on Riv
 
 The setup has two parts:
 
-1. `miniforge/24.11.3-py3.12` provides Conda and Mamba.
+1. `miniforge/26.9.4` provides Conda and Mamba.
 2. [`environment.yml`](environment.yml) defines the Python packages used by the course.
 
 Loading Miniforge alone is not enough. You must also create and activate the `ds6050` environment.
@@ -35,7 +35,7 @@ Wait until the job starts before continuing.
 
 ```bash
 module purge
-module load miniforge/24.11.3-py3.12
+module load miniforge/26.9.4
 ```
 
 ### 3. Create the course environment
@@ -72,7 +72,7 @@ You do not need to recreate the environment. Load Miniforge and activate the exi
 
 ```bash
 module purge
-module load miniforge/24.11.3-py3.12
+module load miniforge/26.9.4
 conda activate ds6050
 ```
 
@@ -111,7 +111,7 @@ After the job starts:
 
 ```bash
 module purge
-module load miniforge/24.11.3-py3.12
+module load miniforge/26.9.4
 conda activate ds6050
 ```
 
@@ -134,7 +134,7 @@ The course may add dependencies for later assignments. After downloading an upda
 
 ```bash
 module purge
-module load miniforge/24.11.3-py3.12
+module load miniforge/26.9.4
 mamba env update -n ds6050 -f environment.yml --prune
 conda activate ds6050
 ```
@@ -151,7 +151,7 @@ Load Miniforge first:
 
 ```bash
 module purge
-module load miniforge/24.11.3-py3.12
+module load miniforge/26.9.4
 ```
 
 ### `EnvironmentNameNotFound: ds6050`
