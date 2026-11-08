@@ -8,14 +8,14 @@ class EncoderGRU(nn.Module):
         super().__init__()
 
         # TODO: Assign to an instance attribute called embedding an embedding with the provided input dimension and embedding dimension.
-        raise NotImplementedError
+        self.embedding = nn.Embedding(input_dim, emb_dim)
 
         # TODO: Assign to an instance attribute called GRU a Gated Recurrent Unit with an input size equal to the provided embedding dimension,
         # a hidden size equal to the provided hidden dimension, a number of layers equal to the provided number of layers,
         # input and output tensors organized by batch in their first dimensions,
         # dropout probability equal to the provided dropout probability if the provided number of layers is greater than 1, and
         # dropout probability equal to 0 otherwise.
-        raise NotImplementedError
+        self.GRU = nn.GRU(emb_dim, hid_dim, n_layers, batch_first=True, dropout=dropout if n_layers > 1 else 0)
 
         self.dropout = nn.Dropout(dropout)
 
@@ -23,24 +23,24 @@ class EncoderGRU(nn.Module):
     def forward(self, src, src_lengths):
 
         # TODO: Assign to a local variable called intermediate the output of passing the provided source to the embedding.
-        raise NotImplementedError
+        intermediate = self.embedding(src)
 
         # TODO: Assign to a local variable called `tensor_of_embedded_sequences` the output of passing intermediate to dropout.
-        raise NotImplementedError
+        tensor_of_embedded_sequences = self.dropout(intermediate)
 
         # TODO: Assign to a local variable called `packed_sequence` the output of packing the tensor of embedded sequences.
         # Specify the list of sequence lengths of each batch element as the provided lengths moved to CPU.
         # Specify that the input tensor is organized by batch in its first dimension.
         # Do not enforce sorting.
-        raise NotImplementedError
+        packed_sequence = pack_padded_sequence(tensor_of_embedded_sequences, src_lengths.cpu(), batch_first=True, enforce_sorted=False)
 
         # TODO: Assign to local variables `packed_sequence_of_output_features` and `tensor_with_final_hidden_states` the output of passing `packed_sequence` to the GRU.
-        raise NotImplementedError
+        packed_sequence_of_output_features, tensor_with_final_hidden_states = self.GRU(packed_sequence)
 
         # TODO: Assign to local variable `sequence_of_output_features` and a placeholder
         # the outputs of padding the packed sequence of output features.
         # Specify that the input tensor is organized by batch in its first dimension.
         # Specify that the total length of the padded sequence is equal to the second dimension of the source.
-        raise NotImplementedError
+        sequence_of_output_features, _ = pad_packed_sequence(packed_sequence_of_output_features, batch_first=True, total_length=src.size(1))
 
         return sequence_of_output_features, tensor_with_final_hidden_states

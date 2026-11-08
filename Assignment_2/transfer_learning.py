@@ -41,7 +41,7 @@ def get_pretrained_model(model_name='resnet18', num_classes=18, feature_extract=
     #    a number of input features equal to the number of input features of `layer_6` and
     #    a number of output features equal to the provided number of classes.
     elif model_name == 'vgg16':
-        model = models.vgg16(weights=models.VGG16_Weights.DEFAULT)
+        model = models.vgg16(weights = models.VGG16_Weights.DEFAULT)
         if feature_extract:
             for param in model.features.parameters():
                 param.requires_grad = False
@@ -63,7 +63,7 @@ def get_pretrained_model(model_name='resnet18', num_classes=18, feature_extract=
     #    a number of input features equal to the number of input features of `layer_1` and
     #    a number of output features equal to the provided number of classes.
     elif model_name == 'mobilenet_v2':
-        model = models.mobilenet_v2(weights=models.MobileNet_V2_Weights.DEFAULT)
+        model = models.mobilenet_v2(weights = models.MobileNet_V2_Weights.DEFAULT)
         if feature_extract:
             for param in model.parameters():
                 param.requires_grad = False

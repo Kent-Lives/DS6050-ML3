@@ -6,6 +6,14 @@ import numpy as np
 from numpy import ndarray
 import seaborn as sns
 
+from time import time
+from typing import Any, Callable, Literal
+
+import matplotlib.pyplot as plt
+import numpy as np
+from numpy import ndarray
+import seaborn as sns
+
 ############ Problem 1 Part C ############
 ## Implement binary and multi-class cross-entropy from scratch
 
@@ -19,8 +27,11 @@ def sigmoid(z: ndarray) -> ndarray:
         p: sigmoid(z) with shape (n,). Each p[i] is the sigmoid of z[i].
     '''
     assert z.ndim == 1, 'z must have shape (n,)'
-    # TODO
-    raise NotImplementedError
+    p = 1 / (1 + np.exp(-z))
+    
+    return p
+
+
 
 
 def softmax(Z: ndarray) -> ndarray:
@@ -33,8 +44,11 @@ def softmax(Z: ndarray) -> ndarray:
         P: softmax(Z) with shape (n, k)
     '''
     assert Z.ndim == 2, 'Z must have shape (n, k)'
-    # TODO
-    raise NotImplementedError
+    p = np.exp(Z - np.max(Z, axis=1, keepdims=True))
+    p /= np.sum(p, axis=1, keepdims=True)
+
+    return p
+
 
 
 def nll_binary(X: ndarray, w: ndarray, y: ndarray) -> float:
@@ -59,8 +73,10 @@ def nll_binary(X: ndarray, w: ndarray, y: ndarray) -> float:
 
     # Xaug[:, 0] is vector of 1s
     Xaug = np.concatenate((np.ones((n, 1)), X), axis=1)
-    # TODO
-    raise NotImplementedError
+    z = Xaug @ w
+    nll = np.mean(np.logaddexp(0, -z) + (1 - y) * z)
+    
+    return nll  
 
 
 def nll_multiclass(X: ndarray, W: ndarray, Y_onehot: ndarray) -> float:
@@ -86,8 +102,11 @@ def nll_multiclass(X: ndarray, W: ndarray, Y_onehot: ndarray) -> float:
 
     # Xaug[:, 0] is vector of 1s
     Xaug = np.concatenate((np.ones((n, 1)), X), axis=1)
-    # TODO
-    raise NotImplementedError
+    z = Xaug @ W
+    z = z - np.max(z, axis=1, keepdims=True)  
+    logProbs = z - np.log(np.sum(np.exp(z), axis=1, keepdims=True))
+    nll = -np.mean(np.sum(Y_onehot * logProbs, axis=1))
+    return nll
 
 
 ############     Problem 2    ############
@@ -125,10 +144,17 @@ def linreg_ne(
     # Xaug[:, 0] is vector of 1s
     Xaug = np.concatenate((np.ones((n, 1)), X), axis=1)
     t_start = time()
-    # TODO: NE implementation
+    A = Xaug.T @ Xaug
+    if lmbda is not None:
+        reg = n * lmbda * np.eye(d + 1)
+        reg[0, 0] = 0
+        A = A + reg
+    XtY = Xaug.T @ Y
+    W = np.linalg.solve(A, XtY)
+    
     t_end = time()
-    # return ?, t_end - t_start
-    raise NotImplementedError
+    return W, t_end - t_start
+    
 
 
 def linreg_gd(
@@ -172,11 +198,15 @@ def linreg_gd(
     Ws = np.zeros((n_iters, d+1, m))  # fixed init for reproducability
     W = np.zeros((d+1, m))
     t_start = time()
-    # TODO: GD implementation
-    t_end = time()
-    # return ?,  t_end - t_start
-    raise NotImplementedError
 
+    for i in range(n_iters):
+        grad = 2 * (Xaug.T @ (Xaug @ W - Y)) / n
+        W = W - lr * grad 
+        Ws[i] = W
+
+    t_end = time()
+    return Ws,  t_end - t_start
+    
 
 def MSE(Y: ndarray, Yhat: ndarray) -> float:
     '''Compute Mean Squared Error between Y and Yhat
@@ -190,9 +220,8 @@ def MSE(Y: ndarray, Yhat: ndarray) -> float:
     '''
     assert Y.ndim == 2, 'Y must have shape (n, m)'
     assert Y.shape == Yhat.shape, 'Y and Yhave must have same shape'
-
-    # TODO
-    raise NotImplementedError
+    mse = float(np.mean((Y - Yhat) ** 2))
+    return mse
 
 
 def plot_runtime_v_feature_dim(
@@ -221,8 +250,8 @@ def plot_runtime_v_feature_dim(
     ax.set_xlabel('Num. Features')
     ax.set_ylabel('Runtime (seconds)')
     ax.grid(visible=True, alpha=0.3)
-    # TODO: plot ds v runtimes_ne and ds v runtimes_gd
-    raise NotImplementedError
+    ax.plot(ds, runtimes_ne, c='tab:green', label='NE')
+    ax.plot(ds, runtimes_gd, c='tab:blue', label='GD')
     ax.legend(loc='upper left')
     fig.tight_layout()
     print(f'Saving {plotname}.png')
@@ -286,12 +315,11 @@ def plot_gd_iters_v_mse(
             ax = axs[*divmod(i, ncols)]
             ax.set_title(rf'$d = {d}$')
             ax.grid(visible=True, alpha=0.3)
-            # TODO: plot NE optimal loss and GD iterations v mse
-            raise NotImplementedError
-            mses_ne_ridge_i = None
-            mses_gd_i = None
+            
+            mses_ne_ridge_i = mses_ne_ridge[i]
+            mses_gd_i = mses_gd[i]
             if j == 0:  # if fullscale
-                mses_ne_i = None
+                mses_ne_i = mses_ne[i]
                 ax.axhline(mses_ne_i, linestyle='-.', c='tab:green', label='NE')
             ax.axhline(mses_ne_ridge_i, linestyle='-.', c='tab:orange', label='NE Ridge')
             ax.plot(mses_gd_i, c='tab:blue', label='GD')
@@ -300,6 +328,7 @@ def plot_gd_iters_v_mse(
         print(f'Saving {plotname}_{plotname_suffix}.png')
         fig.savefig(f'{plotname}_{plotname_suffix}.png')
         plt.close(fig)
+
 
 
 ############     Problem 3    ############
@@ -425,9 +454,9 @@ def run_sgd_improved_analysis(
     '''
     w = start_point.copy()
 
-    # TODO: simulate noise_scale based on batch size
-    noise_scale = None
-    raise NotImplementedError
+    #: simulate noise_scale based on batch size
+    noise_scale = initial_noise * noise_decay * 1/np.sqrt(batch_size)
+#    raise NotImplementedError
 
     converged = False
     t_start = time()
@@ -510,15 +539,15 @@ def plot_heatmaps(
         escaped: ndarray of shape (LR, B, NS, n_trials) of bools
     '''
     n_trials = losses.shape[-1]
-    # TODO: Collect metrics over n_trials
+    # : Collect metrics over n_trials
     # resulting ndarrays will have shape (LR, B, NS)
-    raise NotImplementedError
-    losses_mean = None
-    losses_best = None
-    runtimes_mean = None
-    escaped_prob = None
-    conv_iters_mean = None
-    conv_iters_best = None
+    #raise NotImplementedError
+    losses_mean = np.mean(losses, axis=-1)
+    losses_best = np.min(losses, axis=-1)
+    runtimes_mean = np.mean(runtimes, axis=-1)
+    escaped_prob =  np.mean(escaped, axis=-1)
+    conv_iters_mean = np.mean(conv_iters, axis=-1)
+    conv_iters_best = np.min(conv_iters, axis=-1)
 
     learning_rates_xticks = [str(x) for x in learning_rates]
     batch_sizes_yticks = [str(y) for y in batch_sizes]
@@ -650,8 +679,15 @@ def multi_modal_loss(w: ndarray) -> float:
     Returns:
         L: total loss
     '''
-    # TODO
-    raise NotImplementedError
+    # 
+    L_local1 = -2 * np.exp(-np.linalg.norm(w - np.array([1.5, 1.5]))**2 / 0.2)
+    L_local2 = -1 * np.exp(-np.linalg.norm(w - np.array([1.5, -1.5]))**2 / 0.2)
+    L_local3 = -2 * np.exp(-np.linalg.norm(w - np.array([2.0, -2.0]))**2 / 0.2)
+    L_global = -3.5 * np.exp(-np.linalg.norm(w + np.array([1.5, 1.5]))**2 / 1.5)
+    L_saddle = 0.9 * (w[0]**2 - w[1]**2) * np.exp(-np.linalg.norm(w)**2 / 0.6)
+    return L_local1 + L_local2 + L_local3 + L_global + L_saddle
+    #raise NotImplementedError
+
 
 
 def multi_modal_grad_components(w: ndarray) -> tuple[ndarray, ndarray]:
@@ -668,7 +704,31 @@ def multi_modal_grad_components(w: ndarray) -> tuple[ndarray, ndarray]:
         grad_global: ndarray of shape (2,) of floats for global grad
     '''
     # TODO
-    raise NotImplementedError
+    c1 = np.array([1.5, 1.5])
+    c2 = np.array([1.5, -1.5])
+    c3 = np.array([2.0, -2.0])
+    cGlobal = np.array([-1.5, -1.5])
+
+    L_local1 = -2 * np.exp(-np.linalg.norm(w - c1)**2 / 0.2)
+    L_local2 = -1 * np.exp(-np.linalg.norm(w - c2)**2 /0.2)
+    L_local3 = -2 * np.exp(-np.linalg.norm(w - c3)**2 / 0.2)
+    L_global = -3.5 * np.exp(-np.linalg.norm(w - cGlobal)**2 / 1.5)
+    L_saddle =  0.9 * (w[0]**2 - w[1]**2) * np.exp(-np.linalg.norm(w)**2 / 0.6)
+    globalMin = -3.5 * np.exp(-np.linalg.norm(w + np.array([1.5, 1.5]))**2 / 1.5)
+
+    gradLocal1 = L_local1 * (-2) * (w - c1) / 0.2
+    gradLocal2 = L_local2 * (-2) * (w - c2) / 0.2
+    gradLocal3 = L_local3 * (-2) * (w - c3) / 0.2
+    gradGlobal = L_global * (-2) * (w - cGlobal) / 1.5
+
+    gradSaddle = 0.9 * np.array([2 * w[0], -2 * w[1]]) * np.exp(-np.linalg.norm(w)**2 / 0.6) + \
+                 0.9 * (w[0]**2 - w[1]**2) * (-2 * w / 0.6) * np.exp(-np.linalg.norm(w)**2 / 0.6) 
+
+    gradLocal = gradLocal1 + gradLocal2 + gradLocal3
+
+    grad = gradLocal + gradGlobal + gradSaddle + globalMin
+    return gradLocal, gradGlobal
+
 
 
 ############     Problem 4    ############
@@ -727,11 +787,11 @@ class SimplePerceptron:
             y: training labels. ndarray of shape (n,)
         '''
         n_samples, n_features = X.shape
-        raise NotImplementedError
+        #raise NotImplementedError
 
-        # TODO: Initialize weights from a standard normal distribution and bias to zero
-        self.weights = None
-        self.bias = None
+        # : Initialize weights from a standard normal distribution and bias to zero
+        self.weights = self.prng.standard_normal(n_features)
+        self.bias = 0
 
         # Training loop - implement the perceptron learning algorithm
         for epoch in range(self.max_epochs):
@@ -739,22 +799,22 @@ class SimplePerceptron:
             errors = 0
 
             for i in range(n_samples):
-                # TODO: Compute the linear combination (net input)
-                linear_output = None
+                # : Compute the linear combination (net input)
+                linear_output = X[i] @ self.weights + self.bias
 
                 # Apply step function to get prediction
                 prediction = self._activation_function(linear_output)
 
-                # TODO: Calculate the error and update rule
-                error = None
+                # : Calculate the error and update rule
+                error = y[i] - prediction
 
                 # Only update weights if there's an error (classic perceptron rule)
                 if error != 0:
                     errors += 1
 
-                    # TODO: Apply perceptron update rule
-                    self.weights += None
-                    self.bias += None
+                    # : Apply perceptron update rule
+                    self.weights += self.learning_rate * error * X[i]
+                    self.bias += self.learning_rate * error
 
             self.training_errors.append(errors)
 
@@ -782,8 +842,9 @@ class SimplePerceptron:
         Returns:
             y: ndarray of predicted labels of shape (n,)
         '''
-        # TODO
-        raise NotImplementedError
+        #
+        return self._activation_function(X @ self.weights + self.bias)  
+        
 
     def get_decision_boundary_params(self) -> dict[str, Any] | None:
         '''
@@ -855,8 +916,9 @@ def create_nonlinear_features(X: ndarray) -> ndarray:
     Returns:
         X_enhanced: Augmented XOR dataset of shape (n, d+1)
     '''
-    # TODO
-    raise NotImplementedError
+    #
+    return np.concatenate((X, X[:, [0]] * X[:, [1]]), axis=1)
+    
 
 
 def plot_xor_data(X: ndarray, y: ndarray) -> None:
@@ -980,4 +1042,3 @@ def visualize_decision_boundary(
     fig.tight_layout()
     print('Saving decision_boundary.png')
     fig.savefig('decision_boundary.png')
-

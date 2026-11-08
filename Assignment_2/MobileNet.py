@@ -5,7 +5,6 @@ import torch
 class DepthwiseSeparableConv(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1):
         super(DepthwiseSeparableConv, self).__init__()
-
         # TODO: Assign to an instance attribute called `depthwise_convolution` an object of type Sequential
         # constructed with 3x3 2D convolution, batch normalization, and ReLU6.
         # The convolution should have a number of input channels equal to the provided number of input channels,
@@ -15,10 +14,7 @@ class DepthwiseSeparableConv(nn.Module):
         # Perform ReLU6 in place.
         self.depthwise_convolution = nn.Sequential(
             nn.Conv2d(in_channels, in_channels, kernel_size=3, stride=stride, padding=1, groups=in_channels, bias=False),
-            nn.BatchNorm2d(in_channels),
-            nn.ReLU6(inplace=True)
-        )
-        
+            nn.BatchNorm2d(in_channels), nn.ReLU6(inplace=True))
         # TODO: Assign to an instance attribute called `pointwise_convolution` an object of type Sequential
         # constructed with 1x1 2D convolution, batch normalization, and ReLU6.
         # The convolution should have a number of input channels equal to the provided number of input channels,
@@ -26,24 +22,17 @@ class DepthwiseSeparableConv(nn.Module):
         # Perform ReLU6 in place.
         self.pointwise_convolution = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=1, bias=False),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU6(inplace=True)
-        )
-
+            nn.BatchNorm2d(out_channels), nn.ReLU6(inplace=True))
 
     def forward(self, x):
-
         # TODO: Assign to a local variable called intermediate the output of passing the input through depthwise convolution.
         intermediate = self.depthwise_convolution(x)
-
         # TODO: Return the output of passing intermediate through pointwise convolution.
         return self.pointwise_convolution(intermediate)
-
 
 class InvertedResidual(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1, expand_ratio=6):
         super(InvertedResidual, self).__init__()
-
         # TODO: Assign to an instance attribute called `residual_will_be_used` an indicator
         # that stride is 1 and the number of input channels equals the number of output channels.
         self.residual_will_be_used = stride == 1 and in_channels == out_channels
@@ -51,10 +40,8 @@ class InvertedResidual(nn.Module):
         # TODO: Assign to a local variable called `hidden_dim`
         # the product of the provided number of input channels and the provided expansion ratio.
         hidden_dim = in_channels * expand_ratio
-
         # TODO: Create an empty list called `list_of_layers`.
         list_of_layers = []
-
         # TODO: If the provided expansion ratio is not equal to 1,
         #     add to the list of layers 1x1 2D convolution, 2D batch normalization, and ReLU6.
         #     The convolution must have a number of input channels equal to the provided number of input channels,
@@ -65,7 +52,6 @@ class InvertedResidual(nn.Module):
             list_of_layers.append(nn.Conv2d(in_channels, hidden_dim, kernel_size=1, stride=1, bias=False))
             list_of_layers.append(nn.BatchNorm2d(hidden_dim))
             list_of_layers.append(nn.ReLU6(inplace=True))
-
         # TODO: Add to the list of layers 3x3 2D convolution, 2D batch normalization, and ReLU6.
         # The convolution should have a number of input channels equal to the hidden dimension,
         # a number of output channels equal to the hidden dimension, stride equal to the provided stride,
@@ -74,7 +60,6 @@ class InvertedResidual(nn.Module):
         list_of_layers.append(nn.Conv2d(hidden_dim, hidden_dim, kernel_size=3, stride=stride, padding=1, groups=hidden_dim, bias=False))
         list_of_layers.append(nn.BatchNorm2d(hidden_dim))
         list_of_layers.append(nn.ReLU6(inplace=True))
-
         # TODO: Add to the list of layers 1x1 2D convolution and 2D batch normalization.
         # The convolution must have a number of input channels equal to the hidden dimension,
         # a number of output channels equal to the provided number of output channels, and no bias.
@@ -84,11 +69,8 @@ class InvertedResidual(nn.Module):
         # TODO: Add layers to an object of type Sequential.
         # Assign that object to an instance attribute called sequential.
         self.sequential = nn.Sequential(*list_of_layers)
-        
-
 
     def forward(self, x):
-
         # TODO: If residual will be used, return the output of adding the provided input and
         # the output of passing the provided input through sequential.
         # Otherwise, return the output of passing the provided input through sequential.
@@ -101,7 +83,6 @@ class InvertedResidual(nn.Module):
 class MobileNet(nn.Module):
     def __init__(self, num_classes=18, width_mult=1.0, dropout_prob=0.2):
         super(MobileNet, self).__init__()
-
         # TODO: Define a local variable called `number_of_output_channels_in_initial_convolution`
         # equal to the product of 32 and the provided multiplier.
         # Cast the product to an integer.
@@ -116,8 +97,7 @@ class MobileNet(nn.Module):
         self.initial_convolution = nn.Sequential(
             nn.Conv2d(3, number_of_output_channels_in_initial_convolution, kernel_size=3, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(number_of_output_channels_in_initial_convolution),
-            nn.ReLU6(inplace=True)
-        )
+            nn.ReLU6(inplace=True))
 
         # TODO: Create an empty list of layers called `list_of_layers`.
         list_of_layers = []
@@ -156,7 +136,9 @@ class MobileNet(nn.Module):
 
         for in_channels, out_channels, stride, expand_ratio in configuration:
             scaled_number_of_input_channels = int(in_channels * width_mult)
+
             scaled_number_of_output_channels = int(out_channels * width_mult)
+            
             list_of_layers.append(InvertedResidual(scaled_number_of_input_channels, scaled_number_of_output_channels, stride=stride, expand_ratio=expand_ratio))
 
         # TODO: Add layers in the list of layers to an object of type Sequential.
@@ -213,9 +195,11 @@ class MobileNet(nn.Module):
                 nn.init.kaiming_normal_(module.weight, mode='fan_out', nonlinearity='relu')
                 if module.bias is not None:
                     nn.init.constant_(module.bias, 0)
+            
             elif isinstance(module, nn.BatchNorm2d):
                 nn.init.constant_(module.weight, 1)
                 nn.init.constant_(module.bias, 0)
+
             elif isinstance(module, nn.Linear):
                 nn.init.normal_(module.weight, 0, 0.01)
                 nn.init.constant_(module.bias, 0)
@@ -225,22 +209,29 @@ class MobileNet(nn.Module):
 
         # TODO: Assign to a local variable called intermediate the output of
         # passing the provided input through the initial convolution.
+
         intermediate = self.initial_convolution(x)
 
         # TODO: Assign to intermediate the output of passing intermediate through the sequential.
+        
         intermediate = self.sequential(intermediate)
 
         # TODO: Assign to intermediate the output of passing intermediate through the final convolution.
+        
         intermediate = self.final_convolution(intermediate)
 
         # TODO: Assign to intermediate the output of passing intermediate through average pooling.
+        
         intermediate = self.average_pooling(intermediate)
 
         # TODO: Flatten intermediate from start dimension 1 on.
+        
         intermediate = torch.flatten(intermediate, 1)
 
         # TODO: Assign to intermediate the output of passing intermediate through dropout.
+        
         intermediate = self.dropout(intermediate)
 
         # TODO: Return the output of passing intermediate through the linear transformation.
+        
         return self.linear_transformation(intermediate)

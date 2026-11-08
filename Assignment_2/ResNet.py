@@ -48,19 +48,23 @@ class BasicBlock(nn.Module):
         intermediate = self.convolution_1(x)
 
         # TODO: Assign to intermediate the output of passing intermediate through the first batch normalization.
+
         intermediate = self.batch_normalization_1(intermediate)
 
         # TODO: Assign to intermediate the output of passing intermediate through ReLU.
         intermediate = self.relu(intermediate)
 
         # TODO: Assign to intermediate the output of passing intermediate through the second convolution.
+
         intermediate = self.convolution_2(intermediate)
 
         # TODO: Assign to intermediate the output of passing intermediate through the second batch normalization.
+
         intermediate = self.batch_normalization_2(intermediate)
 
         # TODO: Assign to intermediate the output of adding intermediate and the output of passing the provided input
         # through the shortcut.
+        
         intermediate = intermediate + self.shortcut(x)
 
         # TODO: Return the output of passing intermediate through ReLU.
@@ -84,6 +88,7 @@ class ResNet(nn.Module):
 
         # TODO: Assign to an instance attribute called `max_pooling` 2D max pooling with
         # a kernel size of 3, stride of 2, and padding of 1.
+
         self.max_pooling = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
         # TODO: Assign to a instance attribute called `residual_layer_1` the output of method `_make_layer`
@@ -96,13 +101,16 @@ class ResNet(nn.Module):
 
         # TODO: Assign to a instance attribute called `residual_layer_3` the output of method `_make_layer`
         # with 128 input channels, 256 output channels, 2 blocks, and stride of 2.
+
         self.residual_layer_3 = self._make_layer(128, 256, num_blocks=2, stride=2)
 
         # TODO: Assign to a instance attribute called `residual_layer_4` the output of method `_make_layer`
-        # with 256 input channels, 512 output channels, 2 blocks, and stride of 2.
+        # with 256 input channels, 512 output channels, 2 blocks, and stride of 2.\
+
         self.residual_layer_4 = self._make_layer(256, 512, num_blocks=2, stride=2)
 
         # TODO: Assign to an instance attribute called `average_pooling` 2D average pooling with height of 1 and width of 1.
+        
         self.average_pooling = nn.AdaptiveAvgPool2d((1, 1))
 
         # TODO: Assign to an instance attribute called `linear_transformation` a linear transformation
@@ -152,12 +160,15 @@ class ResNet(nn.Module):
         intermediate = self.residual_layer_4(intermediate)
 
         # TODO: Assign to intermediate the output of passing intermediate through average pooling.
+
         intermediate = self.average_pooling(intermediate)
 
         # TODO: Flatten intermediate from start dimension 1 on.
         # The output tensor of flattening has shape (number of images in batch, 512).
+
         intermediate = intermediate.view(intermediate.size(0), -1)
 
         # TODO: Return the output of passing intermediate through the linear transformation.
         # The output tensor of the linear transformation has shape (number of images in batch, 18).
+        
         return self.linear_transformation(intermediate)

@@ -11,7 +11,7 @@ def train(model, iterator, optimizer, criterion, clip):
 
         # TODO: Assign to local variable `tensor_of_logits_for_many_tokens` the output of passing the source,
         # the list of lengths, and the target to the provided model.
-        raise NotImplementedError
+        tensor_of_logits_for_many_tokens = model(src, src_lengths, tgt)
 
         number_of_tokens_in_vocabulary = tensor_of_logits_for_many_tokens.shape[-1]
         tensor_of_logits_for_many_tokens = tensor_of_logits_for_many_tokens.reshape(-1, number_of_tokens_in_vocabulary)
@@ -19,15 +19,15 @@ def train(model, iterator, optimizer, criterion, clip):
 
         # TODO: Assign to local variable loss the output of passing the tensor of logits for many tokens and the target
         # to the provided criterion.
-        raise NotImplementedError
+        loss = criterion(tensor_of_logits_for_many_tokens, tgt)
 
         # TODO: Perform the backward pass.
-        raise NotImplementedError
+        loss.backward()
 
         torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
 
         # TODO: Update parameters.
-        raise NotImplementedError
+        optimizer.step()
 
         epoch_loss += loss.item()
 
